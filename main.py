@@ -30,3 +30,6 @@ async def sync_notifications(notifications: list[NotificationPayload]):
     # O Android espera um HTTP 200 para apagar os dados do celular.
     # O FastAPI retorna 200 automaticamente se não houver erros.
     return {"status": "success", "message": f"{len(notifications)} notifications saved."}
+
+# Cartao de credito BB
+BB_CREDITO = r"Compra de R\$\s+(\d+)\,(\d{2}), realizada em (\w+) às (\d{2})\:(\d{2}) do dia (\d{2})\/(\d{2}), com cartão final \d{4}\."
