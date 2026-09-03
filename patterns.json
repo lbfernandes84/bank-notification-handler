@@ -21,7 +21,26 @@
                             "card_end_number":8
                         }
                     }],
-                    "lookups":[[6451, "Ourocard"]]
+                    "lookups":[[6475, "Ourocard"]]
+                },
+                {
+                    "name": "debit",
+                    "label": "Cartão de Débito",
+                    "titles":["Compra com cartão de débito"],
+                    "patterns":[{
+                        "text": "Compra no valor de R[\\$S]\\s+(\\d+)\\,(\\d{2}), ([\\w+\\s*]+) cartão final \\d{4} em (\\d{2})\\/(\\d{2})\\/(\\d{2})\\.",
+                        "data_index":{
+                            "ammount_integer_part":1,
+                            "ammount_cents":2,
+                            "location":3,
+                            "datetime_month":7,
+                            "datetime_day":6,
+                            "datetime_hour":4,
+                            "datetime_minute":5,
+                            "card_end_number":8
+                        }
+                    }],
+                    "lookups":[[6475, "Ourocard"]]
                 }
             ]
         }

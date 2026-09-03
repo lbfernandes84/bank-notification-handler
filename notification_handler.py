@@ -10,6 +10,7 @@ class TransactionPattern:
     ammount_cents: int
     destination : int | None = None
     sender : int | None = None
+    datetime_year : int | None = 0
     datetime_month : int = 0
     datetime_day : int = 0
     datetime_hour : int = 0
