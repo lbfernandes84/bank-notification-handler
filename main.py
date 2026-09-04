@@ -47,7 +47,7 @@ async def sync_notifications(notifications: list[NotificationPayload]):
         rows.append(row.model_dump())
 
     supabase = get_supabase_client()
-    supabase.table("Notifications").insert(rows).execute()
+    supabase.table("notifications").insert(rows).execute()
 
     # O Android espera um HTTP 200 para apagar os dados do celular.
     # O FastAPI retorna 200 automaticamente se não houver erros.
@@ -58,7 +58,7 @@ async def sync_notifications(notifications: list[NotificationPayload]):
 async def get_notifications(timestamp: int):
     supabase = get_supabase_client()
     response = (
-        supabase.table("Notifications")
+        supabase.table("notifications")
         .select("*")
         .gte("timestamp", timestamp)
         .order("timestamp")
@@ -75,6 +75,3 @@ async def get_notifications(timestamp: int):
             extracted_infos.append(info)
 
     return extracted_infos
-
-# Cartao de credito BB
-BB_CREDITO = r"Compra de R\$\s+(\d+)\,(\d{2}), realizada em (\w+) às (\d{2})\:(\d{2}) do dia (\d{2})\/(\d{2}), com cartão final \d{4}\."
