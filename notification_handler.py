@@ -8,8 +8,7 @@ class TransactionPattern:
     text: str
     ammount_integer_part: int
     ammount_cents: int
-    destination : int | None = None
-    sender : int | None = None
+    counterparty : int | None = None
     datetime_year : int | None = 0
     datetime_month : int = 0
     datetime_day : int = 0
@@ -21,8 +20,7 @@ class TransactionPattern:
 class TransactionInfo:
     type: str = ""
     ammount: float = 0.0
-    destination : str | None = None
-    sender : str | None = None
+    counterparty : str | None = None
     datetime_ : datetime | None = None
     card_end_number : int | None = None
     extra_info: str = ""
@@ -49,18 +47,22 @@ class TransactionType:
             match = pattern_compiled.fullmatch(notification)
             if match:
                 info.type = self.label
-                info.ammount = float(match.groups(pattern.ammount_integer_part)) + float(match.groups(pattern.ammount_cents))/100
-                info.destination = match.groups(pattern.destination) if pattern.destination else None
-                info.sender = match.groups(pattern.sender) if pattern.sender else None
-                info.datetime_ = datetime(
-                    notification_time.year,
-                    int(match.groups(pattern.month)),
-                    int(match.groups(pattern.day)),
-                    int(match.groups(pattern.hour)),
-                    int(match.groups(pattern.minute)),
+                info.ammount = float(match.group(pattern.ammount_integer_part)) + float(match.group(pattern.ammount_cents))/100
+                info.counterparty = match.group(pattern.counterparty) if pattern.counterparty else None
+                year = notification_time.year if not pattern.datetime_year else int(match.group(pattern.datetime_year))
+                if pattern.datetime_year and year < 100:  # 2-digit year in notification
+                    year += 2000
+                info.datetime_ = datetime(  # noqa: DTZ001
+                    year,
+                    int(match.group(pattern.datetime_month)),
+                    int(match.group(pattern.datetime_day)),
+                    int(match.group(pattern.datetime_hour)) if pattern.datetime_hour else 0,
+                    int(match.group(pattern.datetime_minute)) if pattern.datetime_minute else 0,
                     0)
-                if len(self.lookups) > 0 and pattern.card_end_number:
-                    info.extra_info = self.lookups[int(match.groups(pattern.card_end_number))]
+                if pattern.card_end_number:
+                    info.card_end_number = int(match.group(pattern.card_end_number))
+                    if len(self.lookups) > 0 and info.card_end_number in self.lookups:
+                        info.extra_info = self.lookups[info.card_end_number]
                 return info
         return info
 
@@ -74,19 +76,19 @@ class TransactionInfoExtractor:
     def add_transaction_type(self, transaction_config : dict):
         name = transaction_config["name"]
         label = transaction_config["label"]
-        patterns = transaction_config["patterns"]
         titles = transaction_config["titles"]
+        patterns = transaction_config["patterns"]
         lookups = transaction_config.get("lookups")
         self.transactions_types[name] = TransactionType(name, label, patterns)
         self.transactions_types[name].add_lookups(lookups)
         for title in titles:
             self.transactions_titles_map[title] = name
 
-    def extract_info(self, title, text, notification_time)->TransactionInfo:
-        target_transaction = self.transactions_titles_map[title]
+    def extract_info(self, transaction_title, text, notification_time)->TransactionInfo:
+        target_transaction = self.transactions_titles_map[transaction_title]
         return self.transactions_types[target_transaction].extract_info(text, notification_time)
 
-class NotifInfoExtractors:
+class NotificationInfoExtractors:
 
     def __init__(self, settings_file):
         self.data = None
@@ -107,6 +109,13 @@ class NotifInfoExtractors:
                                              transactions_configs:list):
         for config in transactions_configs:
             info_extractor.add_transaction_type(config)
+
+    def extract(self, bank_title, transaction_title, text, _datetime)->TransactionInfo | None:
+        info = None
+        bank_name = self.titles.get(bank_title)
+        if bank_name:
+            info = self.extractors_per_bank[bank_name].extract_info(transaction_title, text, _datetime)
+        return info
 
 
 
