@@ -102,6 +102,29 @@ class NotifInfoExtractorsTests(unittest.TestCase):
         self.assertEqual(2691, info.card_end_number)
         self.assertEqual("", info.extra_info)
 
+    def test_extracts_info_from_pix_sent_notification(self):
+        tests_root = Path(__file__).resolve().parent
+        patterns_path = tests_root / "files/patterns.json"
+
+        extractors = NotificationInfoExtractors(patterns_path)
+
+        text = "Pix de R$  0,01 enviado da conta Corrente para Lucas B F Frois, Instituição BANCO INTER, às 15:03."
+
+        info = extractors.extract(
+            "Banco do Brasil",
+            "Pix Enviado",
+            text,
+            datetime(2026, 9, 4),
+        )
+
+        self.assertIsNotNone(info)
+        self.assertEqual("Pix Saída", info.type)
+        self.assertEqual(0.01, info.ammount)
+        self.assertEqual("Lucas B F Frois", info.counterparty)
+        self.assertEqual(datetime(2026, 9, 4, 15, 3, 0), info.datetime_)
+        self.assertIsNone(info.card_end_number)
+        self.assertEqual("", info.extra_info)
+
 
 if __name__ == "__main__":
     unittest.main()

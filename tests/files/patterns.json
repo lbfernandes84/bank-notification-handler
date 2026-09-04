@@ -36,6 +36,19 @@
                         "datetime_year":7
                     }],
                     "lookups":[[6475, "Ourocard"]]
+                },
+                {
+                    "name": "pixout",
+                    "label": "Pix Saída",
+                    "titles":["Pix Enviado"],
+                    "patterns":[{
+                        "text": "Pix de R[\\$S]\\s+(\\d+)\\,(\\d{2}) enviado da conta Corrente para ([\\w\\s]+)\\, Instituição [\\w\\s]+\\, às (\\d{2})\\:(\\d{2})\\..*",
+                        "ammount_integer_part":1,
+                        "ammount_cents":2,
+                        "counterparty":3,
+                        "datetime_hour":4,
+                        "datetime_minute":5
+                    }]
                 }
             ]
         }

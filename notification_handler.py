@@ -10,10 +10,10 @@ class TransactionPattern:
     ammount_cents: int
     counterparty : int | None = None
     datetime_year : int | None = 0
-    datetime_month : int = 0
-    datetime_day : int = 0
-    datetime_hour : int = 0
-    datetime_minute : int = 0
+    datetime_month : int | None = 0
+    datetime_day : int | None = 0
+    datetime_hour : int | None = 0
+    datetime_minute : int | None = 0
     card_end_number : int | None = None
 
 @dataclass
@@ -50,14 +50,18 @@ class TransactionType:
                 info.ammount = float(match.group(pattern.ammount_integer_part)) + float(match.group(pattern.ammount_cents))/100
                 info.counterparty = match.group(pattern.counterparty) if pattern.counterparty else None
                 year = notification_time.year if not pattern.datetime_year else int(match.group(pattern.datetime_year))
+                month = notification_time.month if not pattern.datetime_month else int(match.group(pattern.datetime_month))
+                day = notification_time.day if not pattern.datetime_day else int(match.group(pattern.datetime_day))
+                hour = notification_time.hour if not pattern.datetime_hour else int(match.group(pattern.datetime_hour))
+                minute = notification_time.minute if not pattern.datetime_minute else int(match.group(pattern.datetime_minute))
                 if pattern.datetime_year and year < 100:  # 2-digit year in notification
                     year += 2000
                 info.datetime_ = datetime(  # noqa: DTZ001
                     year,
-                    int(match.group(pattern.datetime_month)),
-                    int(match.group(pattern.datetime_day)),
-                    int(match.group(pattern.datetime_hour)) if pattern.datetime_hour else 0,
-                    int(match.group(pattern.datetime_minute)) if pattern.datetime_minute else 0,
+                    month,
+                    day,
+                    hour,
+                    minute,
                     0)
                 if pattern.card_end_number:
                     info.card_end_number = int(match.group(pattern.card_end_number))
