@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 class Notifications(BaseModel):
-    bankTitle: str
+    banktitle: str
     title: str
     content: str
     timestamp: int
