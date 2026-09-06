@@ -40,12 +40,12 @@ class TransactionType:
             for lookup in lookups:
                 self.lookups[lookup[0]] = lookup[1]
 
-    def extract_info(self, notification:str, notification_time:datetime):
-        info = TransactionInfo()
+    def extract_info(self, notification:str, notification_time:datetime)->TransactionInfo | None:
         for pattern in self.transaction_patterns:
             pattern_compiled = re.compile(pattern.text)
             match = pattern_compiled.fullmatch(notification)
             if match:
+                info = TransactionInfo()
                 info.type = self.label
                 info.ammount = float(match.group(pattern.ammount_integer_part)) + float(match.group(pattern.ammount_cents))/100
                 info.counterparty = match.group(pattern.counterparty) if pattern.counterparty else None
@@ -68,29 +68,26 @@ class TransactionType:
                     if len(self.lookups) > 0 and info.card_end_number in self.lookups:
                         info.extra_info = self.lookups[info.card_end_number]
                 return info
-        return info
 
 class TransactionInfoExtractor:
 
     def __init__(self, bank_name:str):
         self.bank_name = bank_name
-        self.transactions_titles_map = {}
         self.transactions_types = {}
 
     def add_transaction_type(self, transaction_config : dict):
         name = transaction_config["name"]
         label = transaction_config["label"]
-        titles = transaction_config["titles"]
         patterns = transaction_config["patterns"]
         lookups = transaction_config.get("lookups")
         self.transactions_types[name] = TransactionType(name, label, patterns)
         self.transactions_types[name].add_lookups(lookups)
-        for title in titles:
-            self.transactions_titles_map[title] = name
 
-    def extract_info(self, transaction_title, text, notification_time)->TransactionInfo:
-        target_transaction = self.transactions_titles_map[transaction_title]
-        return self.transactions_types[target_transaction].extract_info(text, notification_time)
+    def extract_info(self, transaction_title, text, notification_time)->TransactionInfo | None:
+        for transaction in self.transactions_types.values():
+            info = transaction.extract_info(text, notification_time)
+            if info:
+                return info
 
 class NotificationInfoExtractors:
 

@@ -44,11 +44,6 @@ class NotifInfoExtractorsTests(unittest.TestCase):
                 self.assertEqual(len(transaction_config["patterns"]), len(transaction_type.transaction_patterns))
                 self.assertTrue(all(isinstance(pattern, TransactionPattern) for pattern in transaction_type.transaction_patterns))
 
-                for title in transaction_config["titles"]:
-                    self.assertIn(title, info_extractor.transactions_titles_map)
-                    self.assertEqual(transaction_name, info_extractor.transactions_titles_map[title])
-            x = 1
-
     def test_extracts_info_from_debit_card_notification(self):
         tests_root = Path(__file__).resolve().parent
         patterns_path = tests_root / "files/patterns.json"

@@ -39,7 +39,7 @@ async def sync_notifications(notifications: list[NotificationPayload]):
         print("-" * 30)
 
         row = Notifications(
-            banktitle=notif.bankName,
+            bankTitle=notif.bankName,
             title=notif.title,
             content=notif.content,
             timestamp=notif.timestamp,
