@@ -71,8 +71,9 @@ class TransactionType:
 
 class TransactionInfoExtractor:
 
-    def __init__(self, bank_name:str):
+    def __init__(self, bank_name:str, ignore_empty_titles:bool=False):
         self.bank_name = bank_name
+        self.ignore_empty_titles = ignore_empty_titles
         self.transactions_types = {}
 
     def add_transaction_type(self, transaction_config : dict):
@@ -99,6 +100,7 @@ class NotificationInfoExtractors:
             data = json.load(file)
             for extractor_config in data["notif_info_extractors"]:
                 bank_name = extractor_config["bank"]
+                ignore_ = extractor_config["bank"]
                 info_extractor = TransactionInfoExtractor(bank_name)
                 bank_titles = extractor_config["bank_titles"]
                 for title in bank_titles:

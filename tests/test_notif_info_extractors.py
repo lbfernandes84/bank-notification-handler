@@ -97,6 +97,34 @@ class NotifInfoExtractorsTests(unittest.TestCase):
         self.assertEqual(2691, info.card_end_number)
         self.assertEqual("", info.extra_info)
 
+    def test_extracts_credit_notification_with_asterisk_in_counterparty(self):
+        tests_root = Path(__file__).resolve().parent
+        patterns_path = tests_root / "files/patterns.json"
+
+        extractors = NotificationInfoExtractors(patterns_path)
+
+        text = (
+            "Compra de R$  656,26, realizada em MLP*Epoca Cosme às 08:48 do dia 06/09, "
+            "com cartão final 6475. Limite disponível:  4.156. "
+            "Tenha vantagens exclusivas compartilhando seus dados. "
+            "Caso não reconheça essa compra, clique em BLOQUEAR CARTÃO."
+        )
+
+        info = extractors.extract(
+            "Banco do Brasil",
+            "Compra com cartão de crédito",
+            text,
+            datetime(2026, 9, 6),
+        )
+
+        self.assertIsNotNone(info)
+        self.assertEqual("Cartão de Crédito", info.type)
+        self.assertEqual(656.26, info.ammount)
+        self.assertEqual("MLP*Epoca Cosme", info.counterparty)
+        self.assertEqual(datetime(2026, 9, 6, 8, 48), info.datetime_)
+        self.assertEqual(6475, info.card_end_number)
+        self.assertEqual("Ourocard", info.extra_info)
+
     def test_extracts_info_from_pix_sent_notification(self):
         tests_root = Path(__file__).resolve().parent
         patterns_path = tests_root / "files/patterns.json"

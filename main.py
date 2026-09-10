@@ -27,7 +27,7 @@ class NotificationPayload(BaseModel):
 async def sync_notifications(notifications: list[NotificationPayload]):
     print(f"--- Recebidas {len(notifications)} notificações ---")
 
-    rows = []
+    objs = []
     for notif in notifications:
         # Converte o timestamp do Android (milissegundos) para data legível
         data_hora = datetime.fromtimestamp(notif.timestamp / 1000.0).strftime('%d/%m/%Y %H:%M:%S')
@@ -38,16 +38,16 @@ async def sync_notifications(notifications: list[NotificationPayload]):
         print(f"Texto: {notif.content}")
         print("-" * 30)
 
-        row = Notifications(
-            bankTitle=notif.bankName,
+        notification_obj = Notifications(
+            banktitle=notif.bankName,
             title=notif.title,
             content=notif.content,
             timestamp=notif.timestamp,
         )
-        rows.append(row.model_dump())
+        objs.append(notification_obj.model_dump())
 
     supabase = get_supabase_client()
-    supabase.table("notifications").insert(rows).execute()
+    supabase.table("notifications").insert(objs).execute()
 
     # O Android espera um HTTP 200 para apagar os dados do celular.
     # O FastAPI retorna 200 automaticamente se não houver erros.
