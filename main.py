@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from pathlib import Path
 
@@ -63,7 +64,7 @@ async def get_notifications(timestamp: int):
         .gte("timestamp", timestamp)
         .order("timestamp")
         .execute()
-    )
+)
 
     extracted_infos = []
     for row in response.data:
@@ -73,5 +74,7 @@ async def get_notifications(timestamp: int):
         )
         if info:
             extracted_infos.append(info)
+            if os.environ["DEBUG"] == 1:
+                print(info)
 
     return extracted_infos
