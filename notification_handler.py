@@ -14,7 +14,7 @@ class TransactionPattern:
     datetime_day : int | None = 0
     datetime_hour : int | None = 0
     datetime_minute : int | None = 0
-    card_end_number : int | None = None
+    card_end_number : str | None = None
 
 @dataclass
 class TransactionInfo:
@@ -67,7 +67,7 @@ class TransactionType:
                     minute,
                     0)
                 if pattern.card_end_number:
-                    info.card_end_number = int(match.group(pattern.card_end_number))
+                    info.card_end_number = match.group(pattern.card_end_number)
                     info.extra_info = bank_name
                     if len(self.lookups) > 0 and info.card_end_number in self.lookups:
                         info.extra_info = self.lookups[info.card_end_number]
@@ -88,11 +88,14 @@ class TransactionInfoExtractor:
         self.transactions_types[name] = TransactionType(name, label, patterns)
         self.transactions_types[name].add_lookups(lookups)
 
-    def extract_info(self, bank_name, transaction_title, text, notification_time)->TransactionInfo | None:
+    def extract_info(self, bank_name:str, transaction_title:str, text:str, notification_time:datetime)->TransactionInfo | None:
         for transaction in self.transactions_types.values():
-            info = transaction.extract_info(bank_name, text, notification_time)
-            if info:
-                return info
+            info = None
+            if transaction_title or not self.ignore_empty_titles:
+                info = transaction.extract_info(bank_name, text, notification_time)
+                if info:
+                    return info
+
 
 class NotificationInfoExtractors:
 

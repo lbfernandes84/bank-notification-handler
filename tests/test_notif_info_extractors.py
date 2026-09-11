@@ -67,7 +67,7 @@ class NotifInfoExtractorsTests(unittest.TestCase):
         self.assertEqual(42.40, info.ammount)
         self.assertEqual("CASA DE RACOES SILVA", info.counterparty)
         self.assertEqual(datetime(2026, 9, 1), info.datetime_)
-        self.assertEqual(6475, info.card_end_number)
+        self.assertEqual("6475", info.card_end_number)
         self.assertEqual("Ourocard", info.extra_info)
 
     def test_extracts_info_from_credit_card_notification(self):
@@ -94,7 +94,7 @@ class NotifInfoExtractorsTests(unittest.TestCase):
         self.assertEqual(139.99, info.ammount)
         self.assertEqual("Wellhub", info.counterparty)
         self.assertEqual(datetime(2026, 9, 1, 8, 4), info.datetime_)
-        self.assertEqual(2691, info.card_end_number)
+        self.assertEqual("2691", info.card_end_number)
         self.assertEqual("Banco do Brasil", info.extra_info)
 
     def test_extracts_credit_notification_with_asterisk_in_counterparty(self):
@@ -105,7 +105,7 @@ class NotifInfoExtractorsTests(unittest.TestCase):
 
         text = (
             "Compra de R$  656,26, realizada em MLP*Epoca Cosme às 08:48 do dia 06/09, "
-            "com cartão final 6475. Limite disponível:  4.156. "
+            "com cartão final 0416. Limite disponível:  4.156. "
             "Tenha vantagens exclusivas compartilhando seus dados. "
             "Caso não reconheça essa compra, clique em BLOQUEAR CARTÃO."
         )
@@ -122,8 +122,8 @@ class NotifInfoExtractorsTests(unittest.TestCase):
         self.assertEqual(656.26, info.ammount)
         self.assertEqual("MLP*Epoca Cosme", info.counterparty)
         self.assertEqual(datetime(2026, 9, 6, 8, 48), info.datetime_)
-        self.assertEqual(6475, info.card_end_number)
-        self.assertEqual("Ourocard", info.extra_info)
+        self.assertEqual("0416", info.card_end_number)
+        self.assertEqual("Visa Platinum", info.extra_info)
 
     def test_extracts_info_from_pix_sent_notification(self):
         tests_root = Path(__file__).resolve().parent
