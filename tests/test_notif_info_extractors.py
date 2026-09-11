@@ -95,7 +95,7 @@ class NotifInfoExtractorsTests(unittest.TestCase):
         self.assertEqual("Wellhub", info.counterparty)
         self.assertEqual(datetime(2026, 9, 1, 8, 4), info.datetime_)
         self.assertEqual(2691, info.card_end_number)
-        self.assertEqual("", info.extra_info)
+        self.assertEqual("Banco do Brasil", info.extra_info)
 
     def test_extracts_credit_notification_with_asterisk_in_counterparty(self):
         tests_root = Path(__file__).resolve().parent

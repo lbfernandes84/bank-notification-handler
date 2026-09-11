@@ -3,11 +3,11 @@
         {
             "bank":"Banco do Brasil",
             "bank_titles":["Banco do Brasil"],
+            "ignore_empty_titles": true,
             "transactions_config": [
                 {
                     "name": "credit",
                     "label": "Cartão de Crédito",
-                    "titles":["Compra com cartão de crédito"],
                     "patterns":[{
                         "text": "Compra de R\\$\\s+(\\d+)\\,(\\d{2}), realizada em ([\\w\\*\\s]+) às (\\d{2})\\:(\\d{2}) do dia (\\d{2})\\/(\\d{2}), com cartão final (\\d{4})\\..*",
                         "ammount_integer_part":1,
@@ -24,7 +24,6 @@
                 {
                     "name": "debit",
                     "label": "Cartão de Débito",
-                    "titles":["Compra com cartão de débito"],
                     "patterns":[{
                         "text": "Compra no valor de R[\\$S]\\s+(\\d+)\\,(\\d{2}), ([\\w\\s]+) cartão final (\\d{4}) em (\\d{2})\\/(\\d{2})\\/(\\d{2})\\..*",
                         "ammount_integer_part":1,
@@ -40,7 +39,6 @@
                 {
                     "name": "pixout",
                     "label": "Pix Saída",
-                    "titles":["Pix Enviado"],
                     "patterns":[{
                         "text": "Pix de R[\\$S]\\s+(\\d+)\\,(\\d{2}) enviado da conta Corrente para ([\\w\\s]+)\\, Instituição [\\w\\s]+\\, às (\\d{2})\\:(\\d{2})\\..*",
                         "ammount_integer_part":1,

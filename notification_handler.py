@@ -25,6 +25,9 @@ class TransactionInfo:
     card_end_number : int | None = None
     extra_info: str = ""
 
+    def __repr__(self):
+        return ",".join(self.type, self.ammount, self.counterparty, self.datetime_, self.card_end_number, self.extra_info)
+
 class TransactionType:
 
     def __init__(self, name, label, patterns):
@@ -40,7 +43,7 @@ class TransactionType:
             for lookup in lookups:
                 self.lookups[lookup[0]] = lookup[1]
 
-    def extract_info(self, notification:str, notification_time:datetime)->TransactionInfo | None:
+    def extract_info(self, bank_name:str, notification:str, notification_time:datetime)->TransactionInfo | None:
         for pattern in self.transaction_patterns:
             pattern_compiled = re.compile(pattern.text)
             match = pattern_compiled.fullmatch(notification)
@@ -65,6 +68,7 @@ class TransactionType:
                     0)
                 if pattern.card_end_number:
                     info.card_end_number = int(match.group(pattern.card_end_number))
+                    info.extra_info = bank_name
                     if len(self.lookups) > 0 and info.card_end_number in self.lookups:
                         info.extra_info = self.lookups[info.card_end_number]
                 return info
@@ -84,9 +88,9 @@ class TransactionInfoExtractor:
         self.transactions_types[name] = TransactionType(name, label, patterns)
         self.transactions_types[name].add_lookups(lookups)
 
-    def extract_info(self, transaction_title, text, notification_time)->TransactionInfo | None:
+    def extract_info(self, bank_name, transaction_title, text, notification_time)->TransactionInfo | None:
         for transaction in self.transactions_types.values():
-            info = transaction.extract_info(text, notification_time)
+            info = transaction.extract_info(bank_name, text, notification_time)
             if info:
                 return info
 
@@ -117,7 +121,7 @@ class NotificationInfoExtractors:
         info = None
         bank_name = self.titles.get(bank_title)
         if bank_name:
-            info = self.extractors_per_bank[bank_name].extract_info(transaction_title, text, _datetime)
+            info = self.extractors_per_bank[bank_name].extract_info(bank_name, transaction_title, text, _datetime)
         return info
 
 

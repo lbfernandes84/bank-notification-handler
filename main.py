@@ -69,7 +69,7 @@ async def get_notifications(timestamp: int):
     for row in response.data:
         notification_time = datetime.fromtimestamp(row["timestamp"] / 1000.0)
         info = notif_info_extractors.extract(
-            row["bankTitle"], row["title"], row["content"], notification_time
+            row["banktitle"], row["title"], row["content"], notification_time
         )
         if info:
             extracted_infos.append(info)
