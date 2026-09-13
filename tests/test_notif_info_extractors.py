@@ -68,7 +68,7 @@ class NotifInfoExtractorsTests(unittest.TestCase):
         self.assertEqual("CASA DE RACOES SILVA", info.counterparty)
         self.assertEqual(datetime(2026, 9, 1), info.datetime_)
         self.assertEqual("6475", info.card_end_number)
-        self.assertEqual("Ourocard", info.extra_info)
+        self.assertEqual("BB Ourocard", info.extra_info)
 
     def test_extracts_info_from_credit_card_notification(self):
         tests_root = Path(__file__).resolve().parent
@@ -123,7 +123,7 @@ class NotifInfoExtractorsTests(unittest.TestCase):
         self.assertEqual("MLP*Epoca Cosme", info.counterparty)
         self.assertEqual(datetime(2026, 9, 6, 8, 48), info.datetime_)
         self.assertEqual("0416", info.card_end_number)
-        self.assertEqual("Visa Platinum", info.extra_info)
+        self.assertEqual("BB Platinum", info.extra_info)
 
     def test_extracts_info_from_pix_sent_notification(self):
         tests_root = Path(__file__).resolve().parent

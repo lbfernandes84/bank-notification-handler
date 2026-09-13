@@ -19,7 +19,7 @@
                         "datetime_minute":5,
                         "card_end_number":8
                     }],
-                    "lookups":[["6475", "Ourocard"], ["0416", "Visa Platinum"]]
+                    "lookups":[["6475", "BB Ourocard"], ["0416", "BB Platinum"]]
                 },
                 {
                     "name": "debit",
@@ -34,7 +34,7 @@
                         "datetime_month":6,
                         "datetime_year":7
                     }],
-                    "lookups":[["6475", "Ourocard"], ["0416", "Visa Platinum"]]
+                    "lookups":[["6475", "BB Ourocard"], ["0416", "BB Platinum"]]
                 },
                 {
                     "name": "pixout",
