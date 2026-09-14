@@ -73,7 +73,7 @@ async def get_notifications(timestamp: int) -> list[Notification]:
     supabase = get_supabase_client()
     from_datetime = datetime.fromtimestamp(timestamp / 1000.0)
     response = (
-        supabase.table("Notifications")
+        supabase.table("notifications")
         .select("*")
         .gte("datetime_", from_datetime.isoformat())
         .order("datetime_")
