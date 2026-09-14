@@ -38,7 +38,7 @@ class TransactionType:
             if match:
                 info = Notification()
                 info.type_ = self.label
-                info.ammount = float(match.group(pattern.ammount_integer_part)) + float(match.group(pattern.ammount_cents))/100
+                info.ammount = float(match.group(pattern.ammount_integer_part).replace(".", "")) + float(match.group(pattern.ammount_cents))/100
                 info.counterparty = match.group(pattern.counterparty) if pattern.counterparty else None
                 year = notification_time.year if not pattern.datetime_year else int(match.group(pattern.datetime_year))
                 month = notification_time.month if not pattern.datetime_month else int(match.group(pattern.datetime_month))

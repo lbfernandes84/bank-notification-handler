@@ -40,10 +40,22 @@
                     "name": "pixout",
                     "label": "Pix Saída",
                     "patterns":[{
-                        "text": "Pix de R[\\$S]\\s+(\\d+)\\,(\\d{2}) enviado da conta Corrente para ([\\w\\s]+)\\, Instituição [\\w\\s]+\\, às (\\d{2})\\:(\\d{2})\\..*",
+                        "text": "Pix de R[\\$S]\\s+([\\d\\.]+)\\,(\\d{2}) enviado da conta Corrente para ([\\w\\s]+)\\, Instituição [\\w\\s]+\\, às (\\d{2})\\:(\\d{2})\\..*",
                         "ammount_integer_part":1,
                         "ammount_cents":2,
                         "counterparty":3,
+                        "datetime_hour":4,
+                        "datetime_minute":5
+                    }]
+                },
+                {
+                    "name": "pixin",
+                    "label": "Pix Entrada",
+                    "patterns":[{
+                        "text": "Que ótimo! ([\\w\\*\\s]+?)\\s*\\,\\s*.+ enviou um Pix no valor de R[\\$S]\\s+([\\d\\.]+)\\,(\\d{2}), da Instituição: .* , para sua conta Corrente às (\\d{2})\\:(\\d{2})\\s*\\..*",
+                        "ammount_integer_part":2,
+                        "ammount_cents":3,
+                        "counterparty":1,
                         "datetime_hour":4,
                         "datetime_minute":5
                     }]
