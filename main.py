@@ -59,9 +59,9 @@ async def sync_notifications(notifications: list[NotificationPayload]):
 
     supabase = get_supabase_client()
     if raw_notifications:
-        supabase.table("RawNotifications").insert(raw_notifications).execute()
+        supabase.table("rawnotifications").insert(raw_notifications).execute()
     if extracted_infos:
-        supabase.table("Notifications").insert(extracted_infos).execute()
+        supabase.table("notifications").insert(extracted_infos).execute()
 
     # O Android espera um HTTP 200 para apagar os dados do celular.
     # O FastAPI retorna 200 automaticamente se não houver erros.
