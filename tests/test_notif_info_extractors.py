@@ -63,7 +63,7 @@ class NotifInfoExtractorsTests(unittest.TestCase):
         )
 
         self.assertIsNotNone(info)
-        self.assertEqual("Cartão de Débito", info.type)
+        self.assertEqual("Cartão de Débito", info.type_)
         self.assertEqual(42.40, info.ammount)
         self.assertEqual("CASA DE RACOES SILVA", info.counterparty)
         self.assertEqual(datetime(2026, 9, 1), info.datetime_)
@@ -90,7 +90,7 @@ class NotifInfoExtractorsTests(unittest.TestCase):
         )
 
         self.assertIsNotNone(info)
-        self.assertEqual("Cartão de Crédito", info.type)
+        self.assertEqual("Cartão de Crédito", info.type_)
         self.assertEqual(139.99, info.ammount)
         self.assertEqual("Wellhub", info.counterparty)
         self.assertEqual(datetime(2026, 9, 1, 8, 4), info.datetime_)
@@ -118,7 +118,7 @@ class NotifInfoExtractorsTests(unittest.TestCase):
         )
 
         self.assertIsNotNone(info)
-        self.assertEqual("Cartão de Crédito", info.type)
+        self.assertEqual("Cartão de Crédito", info.type_)
         self.assertEqual(656.26, info.ammount)
         self.assertEqual("MLP*Epoca Cosme", info.counterparty)
         self.assertEqual(datetime(2026, 9, 6, 8, 48), info.datetime_)
@@ -141,7 +141,7 @@ class NotifInfoExtractorsTests(unittest.TestCase):
         )
 
         self.assertIsNotNone(info)
-        self.assertEqual("Pix Saída", info.type)
+        self.assertEqual("Pix Saída", info.type_)
         self.assertEqual(0.01, info.ammount)
         self.assertEqual("Lucas B F Frois", info.counterparty)
         self.assertEqual(datetime(2026, 9, 4, 15, 3, 0), info.datetime_)

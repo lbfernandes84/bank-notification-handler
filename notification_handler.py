@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import re
 import json
-
+from models import Notification
 @dataclass
 class TransactionPattern:
     text: str
@@ -15,18 +15,6 @@ class TransactionPattern:
     datetime_hour : int | None = 0
     datetime_minute : int | None = 0
     card_end_number : str | None = None
-
-@dataclass
-class TransactionInfo:
-    type: str = ""
-    ammount: float = 0.0
-    counterparty : str | None = None
-    datetime_ : datetime | None = None
-    card_end_number : int | None = None
-    extra_info: str = ""
-
-    def __repr__(self):
-        return ",".join(self.type, self.ammount, self.counterparty, self.datetime_, self.card_end_number, self.extra_info)
 
 class TransactionType:
 
@@ -43,13 +31,13 @@ class TransactionType:
             for lookup in lookups:
                 self.lookups[lookup[0]] = lookup[1]
 
-    def extract_info(self, bank_name:str, notification:str, notification_time:datetime)->TransactionInfo | None:
+    def extract_info(self, bank_name:str, notification:str, notification_time:datetime)->Notification | None:
         for pattern in self.transaction_patterns:
             pattern_compiled = re.compile(pattern.text)
             match = pattern_compiled.fullmatch(notification)
             if match:
-                info = TransactionInfo()
-                info.type = self.label
+                info = Notification()
+                info.type_ = self.label
                 info.ammount = float(match.group(pattern.ammount_integer_part)) + float(match.group(pattern.ammount_cents))/100
                 info.counterparty = match.group(pattern.counterparty) if pattern.counterparty else None
                 year = notification_time.year if not pattern.datetime_year else int(match.group(pattern.datetime_year))
@@ -88,7 +76,7 @@ class TransactionInfoExtractor:
         self.transactions_types[name] = TransactionType(name, label, patterns)
         self.transactions_types[name].add_lookups(lookups)
 
-    def extract_info(self, bank_name:str, transaction_title:str, text:str, notification_time:datetime)->TransactionInfo | None:
+    def extract_info(self, bank_name:str, transaction_title:str, text:str, notification_time:datetime)->Notification | None:
         for transaction in self.transactions_types.values():
             info = None
             if transaction_title or not self.ignore_empty_titles:
@@ -120,7 +108,7 @@ class NotificationInfoExtractors:
         for config in transactions_configs:
             info_extractor.add_transaction_type(config)
 
-    def extract(self, bank_title, transaction_title, text, _datetime)->TransactionInfo | None:
+    def extract(self, bank_title, transaction_title, text, _datetime)->Notification | None:
         info = None
         bank_name = self.titles.get(bank_title)
         if bank_name:

@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 from db import get_supabase_client
-from models import Notifications
+from models import RawNotification, Notification
 from notification_handler import NotificationInfoExtractors
 
 # Cria a API
@@ -26,55 +26,63 @@ class NotificationPayload(BaseModel):
 # Cria a rota de POST
 @app.post("/api/v1/notifications/sync")
 async def sync_notifications(notifications: list[NotificationPayload]):
-    print(f"--- Recebidas {len(notifications)} notificações ---")
+    if os.environ.get("DEBUG") == "1":
+        print(f"--- Recebidas {len(notifications)} notificações ---")
 
-    objs = []
+    raw_notifications = []
+    extracted_infos = []
     for notif in notifications:
-        # Converte o timestamp do Android (milissegundos) para data legível
-        data_hora = datetime.fromtimestamp(notif.timestamp / 1000.0).strftime('%d/%m/%Y %H:%M:%S')
+        # Converte o timestamp do Android (milissegundos) para data
+        notif_datetime = datetime.fromtimestamp(notif.timestamp / 1000.0)
 
-        # Por enquanto, vamos apenas imprimir no terminal
-        print(f"[{data_hora}] {notif.bankName}")
-        print(f"Título: {notif.title}")
-        print(f"Texto: {notif.content}")
-        print("-" * 30)
+        if os.environ.get("DEBUG") == "1":
+            print(f"[{notif_datetime.strftime('%d/%m/%Y %H:%M:%S')}] {notif.bankName}")
+            print(f"Título: {notif.title}")
+            print(f"Texto: {notif.content}")
+            print("-" * 30)
 
-        notification_obj = Notifications(
-            banktitle=notif.bankName,
-            title=notif.title,
-            content=notif.content,
-            timestamp=notif.timestamp,
+        raw_notification = RawNotification(
+            bank_name=notif.bankName,
+            transaction_title=notif.title,
+            transaction_content=notif.content,
+            timestamp_=notif.timestamp,
         )
-        objs.append(notification_obj.model_dump())
+        raw_notifications.append(raw_notification.model_dump(exclude_unset=True))
+
+        info = notif_info_extractors.extract(
+            notif.bankName, notif.title, notif.content, notif_datetime
+        )
+        if info:
+            extracted_infos.append(info.model_dump(mode="json", exclude_unset=True))
+            if os.environ.get("DEBUG") == "1":
+                print(info)
 
     supabase = get_supabase_client()
-    supabase.table("notifications").insert(objs).execute()
+    if raw_notifications:
+        supabase.table("RawNotifications").insert(raw_notifications).execute()
+    if extracted_infos:
+        supabase.table("Notifications").insert(extracted_infos).execute()
 
     # O Android espera um HTTP 200 para apagar os dados do celular.
     # O FastAPI retorna 200 automaticamente se não houver erros.
     return {"status": "success", "message": f"{len(notifications)} notifications saved."}
 
 # Cria a rota de GET
-@app.get("/api/v1/notifications")
-async def get_notifications(timestamp: int):
+@app.get("/api/v1/notifications", response_model=list[Notification])
+async def get_notifications(timestamp: int) -> list[Notification]:
     supabase = get_supabase_client()
+    from_datetime = datetime.fromtimestamp(timestamp / 1000.0)
     response = (
-        supabase.table("notifications")
+        supabase.table("Notifications")
         .select("*")
-        .gte("timestamp", timestamp)
-        .order("timestamp")
+        .gte("datetime_", from_datetime.isoformat())
+        .order("datetime_")
         .execute()
-)
+    )
 
-    extracted_infos = []
-    for row in response.data:
-        notification_time = datetime.fromtimestamp(row["timestamp"] / 1000.0)
-        info = notif_info_extractors.extract(
-            row["banktitle"], row["title"], row["content"], notification_time
-        )
-        if info:
-            extracted_infos.append(info)
-            if os.environ["DEBUG"] == 1:
-                print(info)
+    notifications = [Notification(**row) for row in response.data]
+    if os.environ.get("DEBUG") == "1":
+        for notif in notifications:
+            print(notif)
 
-    return extracted_infos
+    return notifications
