@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from db import get_supabase_client
@@ -26,46 +26,51 @@ class NotificationPayload(BaseModel):
 # Cria a rota de POST
 @app.post("/api/v1/notifications/sync")
 async def sync_notifications(notifications: list[NotificationPayload]):
-    if os.environ.get("DEBUG") == "1":
-        print(f"--- Recebidas {len(notifications)} notificações ---")
-
-    raw_notifications = []
-    extracted_infos = []
-    for notif in notifications:
-        # Converte o timestamp do Android (milissegundos) para data
-        notif_datetime = datetime.fromtimestamp(notif.timestamp / 1000.0)
-
+    try:
         if os.environ.get("DEBUG") == "1":
-            print(f"[{notif_datetime.strftime('%d/%m/%Y %H:%M:%S')}] {notif.bankName}")
-            print(f"Título: {notif.title}")
-            print(f"Texto: {notif.content}")
-            print("-" * 30)
+            print(f"--- Recebidas {len(notifications)} notificações ---")
 
-        raw_notification = RawNotification(
-            bank_name=notif.bankName,
-            transaction_title=notif.title,
-            transaction_content=notif.content,
-            timestamp_=notif.timestamp,
-        )
-        raw_notifications.append(raw_notification.model_dump(exclude_unset=True))
+        raw_notifications = []
+        extracted_infos = []
+        for notif in notifications:
+            # Converte o timestamp do Android (milissegundos) para data
+            notif_datetime = datetime.fromtimestamp(notif.timestamp / 1000.0)
 
-        info = notif_info_extractors.extract(
-            notif.bankName, notif.title, notif.content, notif_datetime
-        )
-        if info:
-            extracted_infos.append(info.model_dump(mode="json", exclude_unset=True))
             if os.environ.get("DEBUG") == "1":
-                print(info)
+                print(f"[{notif_datetime.strftime('%d/%m/%Y %H:%M:%S')}] {notif.bankName}")
+                print(f"Título: {notif.title}")
+                print(f"Texto: {notif.content}")
+                print("-" * 30)
 
-    supabase = get_supabase_client()
-    if raw_notifications:
-        supabase.table("rawnotifications").insert(raw_notifications).execute()
-    if extracted_infos:
-        supabase.table("notifications").insert(extracted_infos).execute()
+            raw_notification = RawNotification(
+                bank_name=notif.bankName,
+                transaction_title=notif.title,
+                transaction_content=notif.content,
+                timestamp_=notif.timestamp,
+            )
+            raw_notifications.append(raw_notification.model_dump(exclude_unset=True))
 
-    # O Android espera um HTTP 200 para apagar os dados do celular.
-    # O FastAPI retorna 200 automaticamente se não houver erros.
-    return {"status": "success", "message": f"{len(notifications)} notifications saved."}
+            info = notif_info_extractors.extract(
+                notif.bankName, notif.title, notif.content, notif_datetime
+            )
+            if info:
+                extracted_infos.append(info.model_dump(mode="json", exclude_unset=True))
+                if os.environ.get("DEBUG") == "1":
+                    print(info)
+
+        supabase = get_supabase_client()
+        if raw_notifications:
+            supabase.table("rawnotifications").insert(raw_notifications).execute()
+        if extracted_infos:
+            supabase.table("notifications").insert(extracted_infos).execute()
+
+        # O Android espera um HTTP 200 para apagar os dados do celular.
+        # O FastAPI retorna 200 automaticamente se não houver erros.
+        return {"status": "success", "message": f"{len(notifications)} notifications saved."}
+    except Exception as error:
+        if os.environ.get("DEBUG") == "1":
+            print(f"Erro ao sincronizar notificações: {error}")
+        raise HTTPException(status_code=500, detail="Erro ao sincronizar notificações.") from error
 
 # Cria a rota de GET
 @app.get("/api/v1/notifications", response_model=list[Notification])
