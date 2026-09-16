@@ -54,9 +54,9 @@ class TransactionType:
                     hour,
                     minute,
                     0)
+                info.extra_info = bank_name
                 if pattern.card_end_number:
                     info.card_end_number = match.group(pattern.card_end_number)
-                    info.extra_info = bank_name
                     if len(self.lookups) > 0 and info.card_end_number in self.lookups:
                         info.extra_info = self.lookups[info.card_end_number]
                 return info
