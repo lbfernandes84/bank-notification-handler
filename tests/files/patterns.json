@@ -52,10 +52,10 @@
                     "name": "pixin",
                     "label": "Pix Entrada",
                     "patterns":[{
-                        "text": "Que ótimo! ([\\w\\*\\s]+?)\\s*\\,\\s*.+ enviou um Pix no valor de R[\\$S]\\s+([\\d\\.]+)\\,(\\d{2}), da Instituição: .* , para sua conta Corrente às (\\d{2})\\:(\\d{2})\\s*\\..*",
+                        "text": "Que ótimo! (.+)\\, CPF\/CNPJ [\\*\\.\\d\\-\/]+ \\, enviou um Pix de R[S$]\\s+(\\d+)\\,(\\d{2})\\, da Instituição .*\\, para sua conta \\w+ [aà]s (\\d{2})\\:(\\d{2})\\..*",
                         "ammount_integer_part":2,
                         "ammount_cents":3,
-                        "counterparty":1,
+                        "counterparty":1    ,
                         "datetime_hour":4,
                         "datetime_minute":5
                     }]
