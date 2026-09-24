@@ -2,7 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-class RawNotification(BaseModel):
+class DroppedNotification(BaseModel):
     id: int | None = None
     bank_name: str
     transaction_title: str | None = None
