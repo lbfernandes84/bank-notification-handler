@@ -115,6 +115,55 @@ async def sync_notifications(notifications: list[NotificationPayload]):
             print(f"Erro ao sincronizar notificações: {error}")
         raise HTTPException(status_code=500, detail="Erro ao sincronizar notificações.") from error
 
+
+@app.post("/api/v1/notifications/reprocess")
+async def reprocess_dropped_notifications(timestamp_: int):
+    try:
+        supabase = get_supabase_client()
+        response = (
+            supabase.table("dropped_notifications")
+            .select("*")
+            .gte("timestamp_", timestamp_)
+            .order("timestamp_")
+            .execute()
+        )
+
+        extracted_infos = []
+        for row in response.data:
+            notification = DroppedNotification(**row)
+            notification_datetime = datetime.fromtimestamp(notification.timestamp_ / 1000.0)
+            info = notif_info_extractors.extract(
+                notification.bank_name,
+                notification.transaction_title or "",
+                notification.transaction_content,
+                notification_datetime,
+            )
+            if info:
+                extracted_infos.append(info)
+
+        infos_to_insert, duplicates_skipped = _filter_out_duplicate_infos(
+            supabase, extracted_infos
+        )
+        if infos_to_insert:
+            dumped_infos = [
+                info.model_dump(mode="json", exclude_unset=True)
+                for info in infos_to_insert
+            ]
+            supabase.table("notifications").insert(dumped_infos).execute()
+
+        return {
+            "status": "success",
+            "notifications_analyzed": len(response.data),
+            "notifications_saved": len(infos_to_insert),
+            "duplicates_skipped": duplicates_skipped,
+        }
+    except Exception as error:
+        if os.environ.get("DEBUG") == "1":
+            print(f"Erro ao reprocessar notificações: {error}")
+        raise HTTPException(
+            status_code=500, detail="Erro ao reprocessar notificações."
+        ) from error
+
 # Cria a rota de GET
 @app.get("/api/v1/notifications", response_model=list[Notification])
 async def get_notifications(timestamp: int) -> list[Notification]:
