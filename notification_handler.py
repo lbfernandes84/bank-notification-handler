@@ -40,20 +40,30 @@ class TransactionType:
                 info.type_ = self.label
                 info.ammount = float(match.group(pattern.ammount_integer_part).replace(".", "")) + float(match.group(pattern.ammount_cents))/100
                 info.counterparty = match.group(pattern.counterparty) if pattern.counterparty else None
-                year = notification_time.year if not pattern.datetime_year else int(match.group(pattern.datetime_year))
-                month = notification_time.month if not pattern.datetime_month else int(match.group(pattern.datetime_month))
-                day = notification_time.day if not pattern.datetime_day else int(match.group(pattern.datetime_day))
-                hour = notification_time.hour if not pattern.datetime_hour else int(match.group(pattern.datetime_hour))
-                minute = notification_time.minute if not pattern.datetime_minute else int(match.group(pattern.datetime_minute))
-                if pattern.datetime_year and year < 100:  # 2-digit year in notification
-                    year += 2000
-                info.datetime_ = datetime(  # noqa: DTZ001
-                    year,
-                    month,
-                    day,
-                    hour,
-                    minute,
-                    0)
+                datetime_groups = (
+                    pattern.datetime_year,
+                    pattern.datetime_month,
+                    pattern.datetime_day,
+                    pattern.datetime_hour,
+                    pattern.datetime_minute,
+                )
+                if not any(datetime_groups):
+                    info.datetime_ = notification_time
+                else:
+                    year = notification_time.year if not pattern.datetime_year else int(match.group(pattern.datetime_year))
+                    month = notification_time.month if not pattern.datetime_month else int(match.group(pattern.datetime_month))
+                    day = notification_time.day if not pattern.datetime_day else int(match.group(pattern.datetime_day))
+                    hour = notification_time.hour if not pattern.datetime_hour else int(match.group(pattern.datetime_hour))
+                    minute = notification_time.minute if not pattern.datetime_minute else int(match.group(pattern.datetime_minute))
+                    if pattern.datetime_year and year < 100:  # 2-digit year in notification
+                        year += 2000
+                    info.datetime_ = datetime(  # noqa: DTZ001
+                        year,
+                        month,
+                        day,
+                        hour,
+                        minute,
+                        0)
                 info.extra_info = bank_name
                 if pattern.card_end_number:
                     info.card_end_number = match.group(pattern.card_end_number)
