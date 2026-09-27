@@ -61,6 +61,23 @@
                     }]
                 }
             ]
+        },
+        {
+            "bank":"Banco Inter",
+            "bank_titles":["Banco Inter"],
+            "ignore_empty_titles": true,
+            "transactions_config": [
+                {
+                    "name": "pixin",
+                    "label": "Pix Entrada",
+                    "patterns":[{
+                        "text": "(.*) te enviou um [pP]ix de R[S\\$]\\s(\\d+),(\\d{2}) creditado na sua conta final .*\\.",
+                        "ammount_integer_part":2,
+                        "ammount_cents":3,
+                        "counterparty":1
+                    }]
+                }
+            ]
         }
     ]
 }
