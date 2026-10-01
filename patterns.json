@@ -40,7 +40,7 @@
                     "name": "pixout",
                     "label": "Pix Saída",
                     "patterns":[{
-                        "text": "Pix de R[\\$S]\\s+([\\d\\.]+)\\,(\\d{2}) enviado da conta Corrente para ([\\w\\s]+)\\, Instituição [\\w\\s]+\\, às (\\d{2})\\:(\\d{2})\\..*",
+                        "text": "Pix de R[\\$S]\\s+([\\d\\.]+)\\,(\\d{2}) enviado da conta Corrente para ([\\w\\s]+)\\, Instituição .+\\, às (\\d{2})\\:(\\d{2})\\..*",
                         "ammount_integer_part":1,
                         "ammount_cents":2,
                         "counterparty":3,
