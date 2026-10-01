@@ -57,12 +57,34 @@ def _filter_out_duplicate_infos(supabase, infos: list[Notification]) -> tuple[li
         filtered_infos.append(info)
     return filtered_infos, duplicates_skipped
 
+
+def _reprocess_dropped_notifications(supabase) -> tuple[list[Notification], list[int]]:
+    # Tenta reconhecer, com os padrões atuais, notificações já persistidas como não reconhecidas
+    response = supabase.table("dropped_notifications").select("*").execute()
+    recognized_infos = []
+    recognized_ids = []
+    for row in response.data:
+        dropped = DroppedNotification(**row)
+        dropped_datetime = datetime.fromtimestamp(dropped.timestamp_ / 1000.0)
+        info = notif_info_extractors.extract(
+            dropped.bank_name,
+            dropped.transaction_title or "",
+            dropped.transaction_content,
+            dropped_datetime,
+        )
+        if info:
+            recognized_infos.append(info)
+            recognized_ids.append(dropped.id)
+    return recognized_infos, recognized_ids
+
 # Cria a rota de POST
 @app.post("/api/v1/notifications/sync")
 async def sync_notifications(notifications: list[NotificationPayload]):
     try:
         if os.environ.get("DEBUG") == "1":
             print(f"--- Recebidas {len(notifications)} notificações ---")
+
+        supabase = get_supabase_client()
 
         raw_notifications = []
         extracted_infos = []
@@ -91,9 +113,11 @@ async def sync_notifications(notifications: list[NotificationPayload]):
                 )
                 raw_notifications.append(raw_notification.model_dump(exclude_unset=True))
 
-        supabase = get_supabase_client()
         if raw_notifications:
             supabase.table("dropped_notifications").insert(raw_notifications).execute()
+
+        reprocessed_infos, reprocessed_ids = _reprocess_dropped_notifications(supabase)
+        extracted_infos.extend(reprocessed_infos)
 
         duplicates_skipped = 0
         infos_to_insert = []
@@ -103,66 +127,22 @@ async def sync_notifications(notifications: list[NotificationPayload]):
                 dumped_infos = [info.model_dump(mode="json", exclude_unset=True) for info in infos_to_insert]
                 supabase.table("notifications").insert(dumped_infos).execute()
 
+        if reprocessed_ids:
+            supabase.table("dropped_notifications").delete().in_("id", reprocessed_ids).execute()
+
         # O Android espera um HTTP 200 para apagar os dados do celular.
         # O FastAPI retorna 200 automaticamente se não houver erros.
         return {
             "status": "success",
             "message": f"{len(notifications)} notifications saved.",
             "duplicates_skipped": duplicates_skipped,
+            "dropped_notifications_recovered": len(reprocessed_ids),
         }
     except Exception as error:
         if os.environ.get("DEBUG") == "1":
             print(f"Erro ao sincronizar notificações: {error}")
         raise HTTPException(status_code=500, detail="Erro ao sincronizar notificações.") from error
 
-
-@app.post("/api/v1/notifications/reprocess")
-async def reprocess_dropped_notifications(timestamp_: int):
-    try:
-        supabase = get_supabase_client()
-        response = (
-            supabase.table("dropped_notifications")
-            .select("*")
-            .gte("timestamp_", timestamp_)
-            .order("timestamp_")
-            .execute()
-        )
-
-        extracted_infos = []
-        for row in response.data:
-            notification = DroppedNotification(**row)
-            notification_datetime = datetime.fromtimestamp(notification.timestamp_ / 1000.0)
-            info = notif_info_extractors.extract(
-                notification.bank_name,
-                notification.transaction_title or "",
-                notification.transaction_content,
-                notification_datetime,
-            )
-            if info:
-                extracted_infos.append(info)
-
-        infos_to_insert, duplicates_skipped = _filter_out_duplicate_infos(
-            supabase, extracted_infos
-        )
-        if infos_to_insert:
-            dumped_infos = [
-                info.model_dump(mode="json", exclude_unset=True)
-                for info in infos_to_insert
-            ]
-            supabase.table("notifications").insert(dumped_infos).execute()
-
-        return {
-            "status": "success",
-            "notifications_analyzed": len(response.data),
-            "notifications_saved": len(infos_to_insert),
-            "duplicates_skipped": duplicates_skipped,
-        }
-    except Exception as error:
-        if os.environ.get("DEBUG") == "1":
-            print(f"Erro ao reprocessar notificações: {error}")
-        raise HTTPException(
-            status_code=500, detail="Erro ao reprocessar notificações."
-        ) from error
 
 # Cria a rota de GET
 @app.get("/api/v1/notifications", response_model=list[Notification])
