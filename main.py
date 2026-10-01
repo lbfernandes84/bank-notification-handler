@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -77,6 +77,19 @@ def _reprocess_dropped_notifications(supabase) -> tuple[list[Notification], list
             recognized_ids.append(dropped.id)
     return recognized_infos, recognized_ids
 
+
+def _cleanup_old_notifications(supabase, current_datetime: datetime) -> None:
+    notifications_cutoff = datetime(current_datetime.year - 1, 1, 1)
+    previous_month_end = datetime(current_datetime.year, current_datetime.month, 1) - timedelta(days=1)
+    dropped_cutoff = previous_month_end.replace(day=1)
+
+    supabase.table("notifications").delete().lt(
+        "datetime_", notifications_cutoff.isoformat()
+    ).execute()
+    supabase.table("dropped_notifications").delete().lt(
+        "timestamp_", int(dropped_cutoff.timestamp() * 1000)
+    ).execute()
+
 # Cria a rota de POST
 @app.post("/api/v1/notifications/sync")
 async def sync_notifications(notifications: list[NotificationPayload]):
@@ -129,6 +142,8 @@ async def sync_notifications(notifications: list[NotificationPayload]):
 
         if reprocessed_ids:
             supabase.table("dropped_notifications").delete().in_("id", reprocessed_ids).execute()
+
+        _cleanup_old_notifications(supabase, datetime.now())
 
         # O Android espera um HTTP 200 para apagar os dados do celular.
         # O FastAPI retorna 200 automaticamente se não houver erros.
