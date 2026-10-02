@@ -81,7 +81,7 @@
                     "name": "credit",
                     "label": "Cartão de Crédito",
                     "patterns":[{
-                        "text": "Olá, \\w+\\.\\s+Você acaba de comprar R[S$]\\s+([\\d\\.]+)\\,(\\d{2}) em (.+)\\. A compra foi no crédito \\w+\\, com o cartão final \\d{4}",
+                        "text": "Olá, \\w+\\.\\s+Você acaba de comprar R[S\\$]\\s+([\\d\\.]+)\\,(\\d{2}) em (.+)\\. A compra foi no crédito \\w+\\, com o cartão final \\d{4}",
                         "ammount_integer_part":1,
                         "ammount_cents":2,
                         "counterparty":3
@@ -91,7 +91,7 @@
                     "name": "debit",
                     "label": "Cartão de Débito",
                     "patterns":[{
-                        "text": "Olá \\w+\\,\\s+você acaba de comprar no débito no (.+) o valor de R[S$]\\s+([\\d\\.]+)\\,(\\d{2})\\.",
+                        "text": "Olá \\w+\\,\\s+você acaba de comprar no débito no (.+) o valor de R[S\\$]\\s+([\\d\\.]+)\\,(\\d{2})\\.",
                         "ammount_integer_part":2,
                         "ammount_cents":3,
                         "counterparty":1
