@@ -167,7 +167,7 @@ async def get_notifications(timestamp: int) -> list[Notification]:
     response = (
         supabase.table("notifications")
         .select("*")
-        .gte("datetime_", from_datetime.isoformat())
+        .gte("datetime_", from_datetime)
         .order("datetime_")
         .execute()
     )
