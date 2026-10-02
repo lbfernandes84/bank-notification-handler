@@ -163,7 +163,7 @@ async def sync_notifications(notifications: list[NotificationPayload]):
 @app.get("/api/v1/notifications", response_model=list[Notification])
 async def get_notifications(timestamp: int) -> list[Notification]:
     supabase = get_supabase_client()
-    from_datetime = datetime.fromtimestamp(timestamp / 1000.0)
+    from_datetime = datetime.fromtimestamp(timestamp)
     response = (
         supabase.table("notifications")
         .select("*")
