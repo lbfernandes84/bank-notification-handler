@@ -9,7 +9,7 @@
                     "name": "credit",
                     "label": "Cartão de Crédito",
                     "patterns":[{
-                        "text": "Compra de R\\$\\s+(\\d+)\\,(\\d{2}), realizada em ([\\w\\*\\s]+) às (\\d{2})\\:(\\d{2}) do dia (\\d{2})\\/(\\d{2}), com cartão final (\\d{4})\\..*",
+                        "text": "Compra de R\\$\\s+(\\d+)\\,(\\d{2}), realizada em (.+) às (\\d{2})\\:(\\d{2}) do dia (\\d{2})\\/(\\d{2}), com cartão final (\\d{4})\\..*",
                         "ammount_integer_part":1,
                         "ammount_cents":2,
                         "counterparty":3,
@@ -19,13 +19,13 @@
                         "datetime_minute":5,
                         "card_end_number":8
                     }],
-                    "lookups":[["6475", "BB Ourocard"], ["0416", "BB Platinum"]]
+                    "lookups":[["5087", "BB Ourocard"], ["0416", "BB Platinum"]]
                 },
                 {
                     "name": "debit",
                     "label": "Cartão de Débito",
                     "patterns":[{
-                        "text": "Compra no valor de R[\\$S]\\s+(\\d+)\\,(\\d{2}), ([\\w\\s]+) cartão final (\\d{4}) em (\\d{2})\\/(\\d{2})\\/(\\d{2})\\..*",
+                        "text": "Compra no valor de R[\\$S]\\s+(\\d+)\\,(\\d{2}), (.+) cartão final (\\d{4}) em (\\d{2})\\/(\\d{2})\\/(\\d{2})\\..*",
                         "ammount_integer_part":1,
                         "ammount_cents":2,
                         "counterparty":3,
@@ -34,7 +34,7 @@
                         "datetime_month":6,
                         "datetime_year":7
                     }],
-                    "lookups":[["6475", "BB Ourocard"], ["0416", "BB Platinum"]]
+                    "lookups":[["5087", "BB Ourocard"], ["0416", "BB Platinum"]]
                 },
                 {
                     "name": "pixout",
